@@ -1,12 +1,12 @@
 from collections import namedtuple
-import Let_it_be_from_beginner_to_middle.Python.LifeOS.constant as constant
+import constant
 import os
 from datetime import date
 import re
 import hashlib
 
 user = namedtuple('User', ['id','email', 'username', 'password', 'age', 'registration_date', 'role'])
-
+CURRENT_USER = None
 
 def save_user(user):
 		with open(constant.USER_FILE, "a", encoding="utf-8") as f:
@@ -35,15 +35,9 @@ def hash_password(password):
 	return hashlib.sha256(password.encode()).hexdigest()
 
 def registration():
-	today = date.today()
-	hashed = hash_password(password)
 	users = load_user()
 	used_email = {u.email for u in users}
 	used_name = {u.username for u in users}
-	new_id = next_id(users)
-	new_user = user(new_id, email, username, hashed, age, today, "user")
-	save_user(new_user)
-
 	while True:
 		email = input("Enter your email: ")
 		if constant.EMAIL_RE.fullmatch(email):
@@ -70,23 +64,37 @@ def registration():
 			continue
 	password = input("Enter your password: ")
 	age = int(input("Enter your age: "))
+	today = date.today()
+	hashed = hash_password(password)
+	new_id = next_id(users)
+	new_user = user(new_id, email, username, hashed, age, today, "user")
+	save_user(new_user)
 	print(f"Был создан юзер с id: {new_id}")
+	return new_user
 
 
 def login():
+	global CURRENT_USER
 	username = input("Enter your username: ")
 	password = input("Enter your password: ")
 	hashed = hash_password(password)
 	for u in load_user():
 		if u.username == username and u.password == hashed:
 			print("Hello")
+			CURRENT_USER = u
 			return u
 	print("Неверный логин или пароль.")
 	return None
+
+def get_current_user():
+	return CURRENT_USER
+	
 
 
 
 
 if __name__ == "__main__":
-	print(2)
+	registration()
+	login()
+	login()
 		
